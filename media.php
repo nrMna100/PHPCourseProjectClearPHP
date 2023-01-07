@@ -1,3 +1,21 @@
+<?
+session_start();
+require "functions.php";
+
+if (!user_is_authorized())
+    redirect_to("/page_login.php");
+
+$user_id = $_GET["user_id"];
+$user = get_user_by_id($user_id);
+
+if (!is_admin(get_authorized_user()) && !users_are_equal($user, get_authorized_user())) {
+    add_flash_message("danger", "Можно редактировать только свой профиль.");
+    redirect_to("/users.php");
+}
+
+$detailed_user_info = get_user_by_id($user_id, "users_secondary_info");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -40,7 +58,7 @@
             </h1>
 
         </div>
-        <form action="">
+        <form action="handlers/media_handler.php?user_id=<?= $user_id; ?>" method="post" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-xl-6">
                     <div id="panel-1" class="panel">
@@ -50,16 +68,15 @@
                             </div>
                             <div class="panel-content">
                                 <div class="form-group">
-                                    <img src="img/demo/authors/josh.png" alt="" class="img-responsive" width="200">
+                                    <img src="<?= 'img/avatars/' . $detailed_user_info["avatar"]; ?>" alt="" class="img-responsive" width="200">
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="example-fileinput">Выберите аватар</label>
-                                    <input type="file" id="example-fileinput" class="form-control-file">
+                                    <input type="file" id="example-fileinput" class="form-control-file" name="avatar" required>
                                 </div>
 
-
-                                <div class="col-md-12 mt-3 d-flex flex-row-reverse">
+                                <div class=" col-md-12 mt-3 d-flex flex-row-reverse">
                                     <button class="btn btn-warning">Загрузить</button>
                                 </div>
                             </div>

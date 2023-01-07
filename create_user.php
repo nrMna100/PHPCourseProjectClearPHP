@@ -2,7 +2,7 @@
 session_start();
 require "functions.php";
 
-if (!is_admin(get_logged_user()))
+if (is_null(get_authorized_user()) || !is_admin(get_authorized_user()))
     redirect_to("/page_login.php");
 ?>
 
@@ -29,7 +29,7 @@ if (!is_admin(get_logged_user()))
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -43,14 +43,7 @@ if (!is_admin(get_logged_user()))
         </div>
     </nav>
     <main id="js-page-content" role="main" class="page-content mt-3">
-        <? if ($_SESSION["email_exist_alert"]) : ?>
-            <div class="alert alert-danger text-dark" role="alert">
-                <strong>Уведомление!</strong> Этот эл. адрес уже занят другим пользователем.
-            </div>
-        <?
-            unset($_SESSION["email_exist_alert"]);
-        endif;
-        ?>
+        <? display_flash_message("danger"); ?>
 
         <div class="subheader">
             <h1 class="subheader-title">
@@ -117,9 +110,12 @@ if (!is_admin(get_logged_user()))
                                 <div class="form-group">
                                     <label class="form-label" for="example-select">Выберите статус</label>
                                     <select class="form-control" id="example-select" name="status">
-                                        <option>Онлайн</option>
-                                        <option>Отошел</option>
-                                        <option>Не беспокоить</option>
+                                        <?
+                                        $statuses = get_statutes();
+                                        foreach (array_values($statuses) as $status) :
+                                        ?>
+                                            <option> <?= $status; ?> </option>
+                                        <? endforeach; ?>
                                     </select>
                                 </div>
 
@@ -152,7 +148,7 @@ if (!is_admin(get_logged_user()))
                                                     </span>
                                                 </span>
                                             </div>
-                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="vk_social_link">
+                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="vk">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -166,7 +162,7 @@ if (!is_admin(get_logged_user()))
                                                     </span>
                                                 </span>
                                             </div>
-                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="tg_social_link">
+                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="telegram">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -180,7 +176,7 @@ if (!is_admin(get_logged_user()))
                                                     </span>
                                                 </span>
                                             </div>
-                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="inst_social_link">
+                                            <input type="text" class="form-control border-left-0 bg-transparent pl-0" name="instagram">
                                         </div>
                                     </div>
                                     <div class="col-md-12 mt-3 d-flex flex-row-reverse">

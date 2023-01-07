@@ -1,3 +1,21 @@
+<?
+session_start();
+require "functions.php";
+
+if (!user_is_authorized())
+    redirect_to("/page_login.php");
+
+$user_id = $_GET["user_id"];
+$user = get_user_by_id($user_id);
+
+if (!is_admin(get_authorized_user()) && !users_are_equal($user, get_authorized_user())) {
+    add_flash_message("danger", "Можно редактировать только свой профиль.");
+    redirect_to("/users.php");
+}
+
+$detailed_user_info = get_user_by_id($user_id, "users_secondary_info");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -40,7 +58,7 @@
             </h1>
 
         </div>
-        <form action="">
+        <form action="handlers/edit_handler.php?user_id=<?= $user_id; ?>" method="post">
             <div class="row">
                 <div class="col-xl-6">
                     <div id="panel-1" class="panel">
@@ -52,25 +70,25 @@
                                 <!-- username -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Имя</label>
-                                    <input type="text" id="simpleinput" class="form-control" value="Иван иванов">
+                                    <input type="text" id="simpleinput" class="form-control" value="<?= $detailed_user_info["username"]; ?>" name="username">
                                 </div>
 
                                 <!-- title -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Место работы</label>
-                                    <input type="text" id="simpleinput" class="form-control" value="Marlin Веб-разработчик">
+                                    <input type="text" id="simpleinput" class="form-control" value="<?= $detailed_user_info["workplace"]; ?>" name="workplace">
                                 </div>
 
                                 <!-- tel -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Номер телефона</label>
-                                    <input type="text" id="simpleinput" class="form-control" value="8 888 8888 88">
+                                    <input type="text" id="simpleinput" class="form-control" value="<?= $detailed_user_info["phone"]; ?>" name="phone">
                                 </div>
 
                                 <!-- address -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Адрес</label>
-                                    <input type="text" id="simpleinput" class="form-control" value="Восточные Королевства, Штормград">
+                                    <input type="text" id="simpleinput" class="form-control" value="<?= $detailed_user_info["address"]; ?>" name="address">
                                 </div>
                                 <div class="col-md-12 mt-3 d-flex flex-row-reverse">
                                     <button class="btn btn-warning">Редактировать</button>

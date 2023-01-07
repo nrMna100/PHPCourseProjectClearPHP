@@ -8,11 +8,17 @@ $password = $_POST["password"];
 $user = get_user_by_email($email);
 
 if (!empty($user)) {
-    set_flash_message("danger", "Этот эл. адрес уже занят другим пользователем.");
+    add_flash_message("danger", "Этот эл. адрес уже занят другим пользователем.");
     redirect_to("back");
 }
 
-$user_data_to_upload = array("email" => $email, "password" => password_hash($password, PASSWORD_DEFAULT));
-add_user_to_db($user_data_to_upload, "main");
-set_flash_message("success", "Регистрация успешна.");
+$user_id = add_user(["email" => $email, "password" => password_hash($password, PASSWORD_DEFAULT)]);
+
+add_user_id($user_id, "users_secondary_info");
+add_user_id($user_id, "users_socials");
+
+$default_avatar_name = "default-avatar.png";
+update_avatar($user_id, $default_avatar_name);
+
+add_flash_message("success", "Регистрация успешна.");
 redirect_to("/page_login.php");

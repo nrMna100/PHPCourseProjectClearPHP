@@ -1,3 +1,21 @@
+<?
+session_start();
+require "functions.php";
+
+if (!user_is_authorized())
+    redirect_to("/page_login.php");
+
+$user_id = $_GET["user_id"];
+$user = get_user_by_id($user_id);
+
+if (!is_admin(get_authorized_user()) && !users_are_equal($user, get_authorized_user())) {
+    add_flash_message("danger", "Можно редактировать только свой профиль.");
+    redirect_to("/users.php");
+}
+
+$detailed_user_info = get_user_by_id($user_id, "users_secondary_info");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +38,7 @@
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -40,7 +58,7 @@
             </h1>
 
         </div>
-        <form action="">
+        <form action="handlers/status_handler.php?user_id=<?= $user_id; ?>" method="post">
             <div class="row">
                 <div class="col-xl-6">
                     <div id="panel-1" class="panel">
@@ -54,10 +72,18 @@
                                         <!-- status -->
                                         <div class="form-group">
                                             <label class="form-label" for="example-select">Выберите статус</label>
-                                            <select class="form-control" id="example-select">
-                                                <option>Онлайн</option>
-                                                <option>Отошел</option>
-                                                <option>Не беспокоить</option>
+                                            <?
+                                            $statuses = get_statutes();
+                                            $current_user_status = get_user_status($detailed_user_info);
+                                            ?>
+                                            <select class="form-control" id="example-select" name="status">
+                                                <? foreach ($statuses as $status_key => $value) : ?>
+                                                    <? if ($current_user_status === $status_key) : ?>
+                                                        <option selected> <?= $value; ?> </option>
+                                                    <? else : ?>
+                                                        <option> <?= $value; ?> </option>
+                                                    <? endif; ?>
+                                                <? endforeach; ?>
                                             </select>
                                         </div>
                                     </div>

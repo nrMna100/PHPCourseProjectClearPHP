@@ -2,10 +2,8 @@
 session_start();
 require "functions.php";
 
-if (!is_user_logged())
+if (!user_is_authorized())
     redirect_to("/page_login.php");
-
-$users = get_all_users();
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +33,7 @@ $users = get_all_users();
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -50,7 +48,10 @@ $users = get_all_users();
     </nav>
 
     <main id="js-page-content" role="main" class="page-content mt-3">
-        <? display_flash_message("success"); ?>
+        <?
+        display_flash_message("success");
+        display_flash_message("danger");
+        ?>
 
         <div class="subheader">
             <h1 class="subheader-title">
@@ -60,7 +61,7 @@ $users = get_all_users();
         <div class="row">
             <div class="col-xl-12">
 
-                <? if (is_admin(get_logged_user())) : ?>
+                <? if (is_admin(get_authorized_user())) : ?>
                     <a class="btn btn-success" href="create_user.php">Добавить</a>
                 <? endif; ?>
 
@@ -78,33 +79,41 @@ $users = get_all_users();
             </div>
         </div>
         <div class="row" id="js-contacts">
-            <? foreach ($users as $user) : ?>
+            <?
+            $users = get_all_users();
+            foreach ($users as $user) :
+                $detailed_user_info =
+                    get_user_by_id($user["id"], "users_secondary_info");
+                $user_socials = get_user_by_id($user["id"], "users_socials");
+            ?>
 
                 <div class="col-xl-4">
-                    <div id="c_<?= $user["id"] ?>" class="card border shadow-0 mb-g shadow-sm-hover" data-filter-tags="<?= strtolower($user["username"]); ?>">
+                    <div id="c_<?= $user["id"] ?>" class="card border shadow-0 mb-g shadow-sm-hover" data-filter-tags="<?= strtolower($detailed_user_info["username"]); ?>">
                         <div class="card-body border-faded border-top-0 border-left-0 border-right-0 rounded-top">
                             <div class="d-flex flex-row align-items-center">
                                 <?
-                                switch ($user["status"]) {
-                                    case 'Онлайн':
+                                switch ($detailed_user_info["status"]) {
+                                    case 'online':
                                         $status = "status-success";
                                         break;
-                                    case 'Отошел':
+                                    case 'moved_away':
                                         $status = "status-warning";
                                         break;
-                                    case 'Не беспокоить':
+                                    case 'do_not_disturb':
                                         $status = "status-danger";
                                         break;
                                 }
                                 ?>
                                 <span class="status <?= $status; ?> mr-3">
-                                    <span class="rounded-circle profile-image d-block" style="background-image:url('<?= 'img/avatars/' . $user["avatar"]; ?>'); background-size: cover;"></span>
+                                    <a href="page_profile.php?user_id=<?= $user["id"]; ?>">
+                                        <span class="rounded-circle profile-image d-block" style="background-image:url('<?= 'img/avatars/' . $detailed_user_info["avatar"]; ?>'); background-size: cover;"></span>
+                                    </a>
                                 </span>
 
                                 <div class="info-card-text flex-1">
-                                    <? if (is_admin(get_logged_user()) || are_users_equal($user, get_logged_user())) : ?>
+                                    <? if (is_admin(get_authorized_user()) || users_are_equal($user, get_authorized_user())) : ?>
                                         <a href="javascript:void(0);" class="fs-xl text-truncate text-truncate-lg text-info" data-toggle="dropdown" aria-expanded="false">
-                                            <?= $user["username"]; ?>
+                                            <?= $detailed_user_info["username"]; ?>
                                             <i class="fal fas fa-cog fa-fw d-inline-block ml-1 fs-md"></i>
                                             <i class="fal fa-angle-down d-inline-block ml-1 fs-md"></i>
                                         </a>
@@ -112,27 +121,27 @@ $users = get_all_users();
                                             <a class="dropdown-item" href="edit.php?user_id=<?= $user["id"]; ?>">
                                                 <i class="fa fa-edit"></i>
                                                 Редактировать</a>
-                                            <a class="dropdown-item" href="security.php">
+                                            <a class="dropdown-item" href="security.php?user_id=<?= $user["id"]; ?>">
                                                 <i class="fa fa-lock"></i>
                                                 Безопасность</a>
-                                            <a class="dropdown-item" href="status.php">
+                                            <a class="dropdown-item" href="status.php?user_id=<?= $user["id"]; ?>">
                                                 <i class="fa fa-sun"></i>
                                                 Установить статус</a>
-                                            <a class="dropdown-item" href="media.php">
+                                            <a class="dropdown-item" href="media.php?user_id=<?= $user["id"]; ?>">
                                                 <i class="fa fa-camera"></i>
                                                 Загрузить аватар
                                             </a>
-                                            <a href="#" class="dropdown-item" onclick="return confirm('are you sure?');">
+                                            <a href="handlers/delete_user_handler.php?user_id=<?= $user["id"]; ?>" class="dropdown-item" onclick="return confirm('are you sure?');">
                                                 <i class="fa fa-window-close"></i>
                                                 Удалить
                                             </a>
                                         </div>
                                     <? else : ?>
                                         <a href="javascript:void(0);" class="fs-xl text-truncate text-truncate-lg text-info" data-toggle="dropdown" aria-expanded="false">
-                                            <?= $user["username"]; ?>
+                                            <?= $detailed_user_info["username"]; ?>
                                         </a>
                                     <? endif; ?>
-                                    <span class="text-truncate text-truncate-xl"><?= $user["workplace"]; ?></span>
+                                    <span class="text-truncate text-truncate-xl"><?= $detailed_user_info["workplace"]; ?></span>
                                 </div>
 
                                 <button class="js-expand-btn btn btn-sm btn-default d-none" data-toggle="collapse" data-target="#c_<?= $user["id"] ?> > .card-body + .card-body" aria-expanded="false">
@@ -143,26 +152,29 @@ $users = get_all_users();
                         </div>
                         <div class="card-body p-0 collapse show">
                             <div class="p-3">
-                                <a href="tel:<?= $user["phone"]; ?>" class="mt-1 d-block fs-sm fw-400 text-dark">
-                                    <i class="fas fa-mobile-alt text-muted mr-2"></i><?= $user["phone"]; ?></a>
+                                <a href="tel:<?= $detailed_user_info["phone"]; ?>" class="mt-1 d-block fs-sm fw-400 text-dark">
+                                    <i class="fas fa-mobile-alt text-muted mr-2"></i><?= $detailed_user_info["phone"]; ?>
+                                </a>
                                 <a href="mailto:<?= $user["email"]; ?>" class="mt-1 d-block fs-sm fw-400 text-dark">
-                                    <i class="fas fa-mouse-pointer text-muted mr-2"></i><?= $user["email"]; ?></a>
+                                    <i class="fas fa-mouse-pointer text-muted mr-2"></i><?= $user["email"]; ?>
+                                </a>
                                 <address class="fs-sm fw-400 mt-4 text-muted">
-                                    <i class="fas fa-map-pin mr-2"></i><?= $user["address"]; ?>
+                                    <i class="fas fa-map-pin mr-2"></i><?= $detailed_user_info["address"]; ?>
                                 </address>
                                 <div class="d-flex flex-row">
-                                    <? if (!empty($user["vk_social_link"])) : ?>
-                                        <a href="<?= $user["vk_social_link"]; ?>" class="mr-2 fs-xxl" style="color:#4680C2">
+                                    <?
+                                    if (!empty($user_socials["vk"])) : ?>
+                                        <a href="<?= $user_socials["vk"]; ?>" class="mr-2 fs-xxl" style="color:#4680C2">
                                             <i class="fab fa-vk"></i>
                                         </a>
                                     <? endif; ?>
-                                    <? if (!empty($user["tg_social_link"])) : ?>
-                                        <a href="<?= $user["tg_social_link"]; ?>" class="mr-2 fs-xxl" style="color:#38A1F3">
+                                    <? if (!empty($user_socials["telegram"])) : ?>
+                                        <a href="<?= $user_socials["telegram"]; ?>" class="mr-2 fs-xxl" style="color:#38A1F3">
                                             <i class="fab fa-telegram"></i>
                                         </a>
                                     <? endif; ?>
-                                    <? if (!empty($user["inst_social_link"])) : ?>
-                                        <a href="<?= $user["inst_social_link"]; ?>" class="mr-2 fs-xxl" style="color:#E1306C">
+                                    <? if (!empty($user_socials["instagram"])) : ?>
+                                        <a href="<?= $user_socials["instagram"]; ?>" class="mr-2 fs-xxl" style="color:#E1306C">
                                             <i class="fab fa-instagram"></i>
                                         </a>
                                     <? endif; ?>

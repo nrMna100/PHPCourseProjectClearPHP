@@ -1,3 +1,19 @@
+<?
+session_start();
+require "functions.php";
+
+if (!user_is_authorized())
+    redirect_to("/page_login.php");
+
+$user_id = $_GET["user_id"];
+$user = get_user_by_id($user_id);
+
+if (!is_admin(get_authorized_user()) && !users_are_equal($user, get_authorized_user())) {
+    add_flash_message("danger", "Можно редактировать только свой профиль.");
+    redirect_to("/users.php");
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +36,7 @@
         <div class="collapse navbar-collapse" id="navbarColor02">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                    <a class="nav-link" href="users.php">Главная <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
@@ -40,7 +56,10 @@
             </h1>
 
         </div>
-        <form action="">
+
+        <? display_flash_message("danger"); ?>
+
+        <form action="handlers/security_handler.php?user_id=<?= $user_id; ?>" method="post">
             <div class="row">
                 <div class="col-xl-6">
                     <div id="panel-1" class="panel">
@@ -52,19 +71,19 @@
                                 <!-- email -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Email</label>
-                                    <input type="text" id="simpleinput" class="form-control" value="john@example.com">
+                                    <input type="text" id="simpleinput" class="form-control" value="<?= $user["email"] ?>" required name="email">
                                 </div>
 
                                 <!-- password -->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Пароль</label>
-                                    <input type="password" id="simpleinput" class="form-control">
+                                    <input type="password" id="simpleinput" class="form-control" required name="password">
                                 </div>
 
                                 <!-- password confirmation-->
                                 <div class="form-group">
                                     <label class="form-label" for="simpleinput">Подтверждение пароля</label>
-                                    <input type="password" id="simpleinput" class="form-control">
+                                    <input type="password" id="simpleinput" class="form-control" required name="duplicated_password">
                                 </div>
 
 

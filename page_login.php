@@ -44,7 +44,8 @@ require "functions.php";
             display_flash_message("success");
             display_flash_message("danger");
             ?>
-            <form action="handlers/login_hander.php" method="post">
+
+            <form action="handlers/login_handler.php" method="post">
                 <div class="form-group">
                     <label class="form-label" for="username">Email</label>
                     <input type="email" id="username" class="form-control" placeholder="Эл. адрес" value="" required name="email">
