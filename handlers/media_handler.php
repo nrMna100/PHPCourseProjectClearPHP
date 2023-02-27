@@ -6,7 +6,7 @@ $user_id = $_GET["user_id"];
 $detailed_user_info = get_user_by_id($user_id, "users_secondary_info");
 
 $avatar = $_FILES["avatar"];
-$default_avatar_name = "default-avatar.png";
+$default_avatar_name = get_default_avatar_name();
 
 if (!is_file_empty($avatar) && is_image($avatar)) {
     $unique_file_name = get_unique_image_name($avatar);

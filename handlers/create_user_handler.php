@@ -31,7 +31,7 @@ if (!is_file_empty($avatar) && is_image($avatar)) {
     $filed_directory = '../img/avatars/';
     upload_file_to_dir($filed_directory, $avatar, $unique_file_name);
 } else {
-    $default_avatar_name = "default-avatar.png";
+    $default_avatar_name = get_default_avatar_name();
 }
 
 $detailed_user_info["avatar"] = $unique_file_name ?? $default_avatar_name;

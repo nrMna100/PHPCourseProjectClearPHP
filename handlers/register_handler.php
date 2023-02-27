@@ -17,7 +17,7 @@ $user_id = add_user(["email" => $email, "password" => password_hash($password, P
 add_user_id($user_id, "users_secondary_info");
 add_user_id($user_id, "users_socials");
 
-$default_avatar_name = "default-avatar.png";
+$default_avatar_name = get_default_avatar_name();
 update_avatar($user_id, $default_avatar_name);
 
 add_flash_message("success", "Регистрация успешна.");

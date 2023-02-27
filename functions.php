@@ -604,3 +604,24 @@ function delete_file_from_dir($filed_directory, $filename)
     if (file_exists($filed_directory . $filename))
         unlink($filed_directory . $filename);
 }
+
+function get_default_avatar_name()
+{
+    /*
+    @ Parameters: null
+
+    @ Description: return default avatar name
+
+    @ Return: string
+    */
+
+    return "default-avatar.png";
+}
+
+class Connection
+{
+    public static function set()
+    {
+        return 5;
+    }
+}
